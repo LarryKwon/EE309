@@ -35,6 +35,9 @@ struct dnode *parse_dir(const char *path, size_t *cnt)
     {
         continue;
     }
+    if(!is_all && entry->d_name[0] == '.'){
+      continue;
+    }
     (*cnt)++;
     struct dnode *ptr;
     if(!(ptr = (struct dnode *)malloc(sizeof(struct dnode)))){
