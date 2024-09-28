@@ -1,0 +1,128 @@
+{
+    "tests" : [
+        { 
+            "test_name" : "test-basic",
+            "test_total_score" : 20,
+            "test_cases" : [
+                {
+                    "test_case_name" : "file-single",
+                    "test_case_weight" : 15
+                },
+                {
+                    "test_case_name" : "file-multiple",
+                    "test_case_weight" : 15
+                },
+                {
+                    "test_case_name" : "dir-single",
+                    "test_case_weight" : 15
+                },
+                {
+                    "test_case_name" : "dir-multiple",
+                    "test_case_weight" : 20
+                },
+                {
+                    "test_case_name" : "dir-cwd",
+                    "test_case_weight" : 15
+                },
+                {
+                    "test_case_name" : "mixed",
+                    "test_case_weight" : 20
+                }      
+            ]
+        },
+        {
+            "test_name" : "test-a",
+            "test_total_score" : 10,
+            "test_cases" : [
+                {
+                    "test_case_name" : "dir-hidden-file",
+                    "test_case_weight" : 50
+                },
+                {
+                    "test_case_name" : "**REDACT**",
+                    "test_case_weight" : 50
+                }
+            ]
+        },
+        {
+            "test_name" : "test-l",
+            "test_total_score" : 15,
+            "test_cases" : [
+                {
+                    "test_case_name" : "file-single-long",
+                    "test_case_weight" : 33
+                },
+                {
+                    "test_case_name" : "**REDACT**",
+                    "test_case_weight" : 33
+                },
+                {
+                    "test_case_name" : "**REDACT**",
+                    "test_case_weight" : 33
+                }
+            ]
+        },
+        {
+            "test_name" : "test-R",
+            "test_total_score" : 15,
+            "test_cases" : [
+                {
+                    "test_case_name" : "dir-recursive-one",
+                    "test_case_weight" : 33
+                },
+                {
+                    "test_case_name" : "**REDACT**",
+                    "test_case_weight" : 33
+                },
+                {
+                    "test_case_name" : "**REDACT**",
+                    "test_case_weight" : 34
+                }
+            ]
+        },
+        {
+            "test_name" : "test-advanced",
+            "test_total_score" : 30,
+            "test_cases" : [
+                {
+                    "test_case_name" : "**REDACT**",
+                    "test_case_weight" : 20
+                },
+                {
+                    "test_case_name" : "**REDACT**",
+                    "test_case_weight" : 20
+                },
+                {
+                    "test_case_name" : "**REDACT**",
+                    "test_case_weight" : 20
+                },
+                {
+                    "test_case_name" : "**REDACT**",
+                    "test_case_weight" : 20
+                },
+                {
+                    "test_case_name" : "**REDACT**",
+                    "test_case_weight" : 20
+                }
+        ]
+        },
+        {
+            "test_name" : "test-error",
+            "test_total_score" : 10,
+            "test_cases" : [
+                {
+                    "test_case_name" : "error-eexist",
+                    "test_case_weight" : 33
+                },
+                {
+                    "test_case_name" : "**REDACT**",
+                    "test_case_weight" : 33
+                },
+                {
+                    "test_case_name" : "**REDACT**",
+                    "test_case_weight" : 34
+                }
+            ]
+        }
+    ]
+}
