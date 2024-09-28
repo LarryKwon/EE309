@@ -103,6 +103,12 @@ void display_dnode_long(struct dnode *d)
     //
     //
     //
+    ret = readlink(d->fullname, lpath, MAX_PATH_SIZE);
+    if(ret == -1){
+      fprintf(stderr, "cannot readlink : %s\n", strerror(errno));
+      free(lpath);
+      return;
+    }
 
     lpath[ret] = '\0';
 
