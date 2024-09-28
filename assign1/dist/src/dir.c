@@ -15,6 +15,22 @@ extern int is_recursive;
 // @param path : path of directory that will be parsed
 // @param cnt : size_t pointer which count of dnode entries stored
 // @return : head pointer of dnode linked list
+
+int is_cur_dir(const char *name)
+{
+  return strcmp(name, ".") == 0;
+}
+
+int is_parent_dir(const char *name)
+{
+  return strcmp(name, "..") == 0;
+}
+
+int is_hidden(const char *name)
+{
+  return name[0] == '.';
+}
+
 struct dnode *parse_dir(const char *path, size_t *cnt)
 {
   struct dnode *head = NULL;
@@ -31,12 +47,12 @@ struct dnode *parse_dir(const char *path, size_t *cnt)
   struct dnode *current;
   while ((entry = readdir(dir)) != NULL)
   {
-    if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+
+    if (!is_all)
     {
+      if(is_hidden(entry->d_name) || is_cur_dir(entry->d_name) || is_parent_dir(entry->d_name)){
         continue;
-    }
-    if(!is_all && entry->d_name[0] == '.'){
-      continue;
+      }
     }
     (*cnt)++;
     struct dnode *ptr;
