@@ -130,10 +130,23 @@ struct dnode *parse_dnode(const char *fullname, int follow_link)
   struct stat fileStat;
 
   // TODO: Task 3
-  if (stat(fullname, &fileStat) == -1)
+  if (follow_link)
   {
-    perror("stat");
-    return EXIT_FAILURE;
+    if (stat(fullname, &fileStat) == -1)
+    {
+      perror("stat");
+      free(res);
+      return NULL;
+    }
+  }
+  else
+  {
+    if (lstat(fullname, &fileStat) == -1)
+    {
+      perror("lstat");
+      free(res);
+      return NULL;
+    }
   }
 
   res->fullname = strdup(fullname);
