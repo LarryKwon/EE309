@@ -100,17 +100,14 @@ int main(int argc, char *argv[])
     // TODO: Task 1
     case 'a':
       is_all = 1;
-      printf("%s\n", "all");
       break;
 
     case 'l':
       is_long = 1;
-      printf("%s\n", "long");
       break;
 
     case 'R':
       is_recursive = 1;
-      printf("%s\n", "recursive");
       break;
 
     default: /* unknown options */
