@@ -27,7 +27,7 @@ void do_ls(char **paths)
   // parse the given arguments and seperate them by file/directory
   for (curr = paths; *curr; curr++)
   {
-    printf("curr: %s\n", *curr);
+    // printf("curr: %s\n", *curr);
     if (!(d = parse_dnode(*curr,
                           !is_long))) // don't follow the link if -l specified
       exit(EXIT_FAILURE);
@@ -35,14 +35,14 @@ void do_ls(char **paths)
     d->name = strdup(*curr);
     if (S_ISDIR(d->dn_mode))
     {
-      printf("dir: %s\n", d->name);
+      // printf("dir: %s\n", d->name);
       d->dn_next = dir_head;
       dir_head = d;
       dir_cnt++;
     }
     else
     {
-      printf("file: %s\n", d->name);
+      // printf("file: %s\n", d->name);
       d->dn_next = file_head;
       file_head = d;
       file_cnt++;
@@ -50,10 +50,10 @@ void do_ls(char **paths)
   }
 
   // sort each dnodes
-  printf("file_cnt: %ld\n", file_cnt);
+  // printf("file_cnt: %ld\n", file_cnt);
   if (!(file_arr = sort_dnode_entries(file_head, file_cnt)))
     exit(EXIT_FAILURE);
-  printf("dir_cnt: %ld\n", dir_cnt);
+  // printf("dir_cnt: %ld\n", dir_cnt);
   if (!(dir_arr = sort_dnode_entries(dir_head, dir_cnt)))
     exit(EXIT_FAILURE);
 

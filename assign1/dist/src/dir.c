@@ -18,6 +18,7 @@ extern int is_recursive;
 struct dnode *parse_dir(const char *path, size_t *cnt)
 {
   struct dnode *head = NULL;
+  *cnt = 0;
 
   // TODO: Task 2
   DIR *dir = opendir(path);
@@ -30,13 +31,27 @@ struct dnode *parse_dir(const char *path, size_t *cnt)
   struct dnode *current;
   while ((entry = readdir(dir)) != NULL)
   {
+    if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+    {
+        continue;
+    }
     (*cnt)++;
-    struct dnode *ptr = (struct dnode *)malloc(sizeof(struct dnode));
+    struct dnode *ptr;
+    if(!(ptr = (struct dnode *)malloc(sizeof(struct dnode)))){
+      fprintf(stderr,"cannot allocate dnode : %s\n", strerror(errno));
+    };
     ptr->name = strdup(entry->d_name);
     ptr->fullname = strdup(concat_path(path, entry->d_name));
     ptr->dn_next = head;
     head = ptr;
   }
+  current = head;
+  // printf("%zd\n", *cnt);
+  // for (int i = 0; i < *cnt; i++)
+  // {
+  //   printf("print files in dir: %s %d\n", current->name, current->dn_mode);
+  //   current = current -> dn_next;
+  // }
   return head;
 }
 
