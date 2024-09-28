@@ -10,6 +10,7 @@
 extern int is_all;
 extern int is_print_dir;
 extern int is_recursive;
+extern int is_long;
 
 // parse_dir : parse the directory into dnode linked list
 // @param path : path of directory that will be parsed
@@ -50,17 +51,18 @@ struct dnode *parse_dir(const char *path, size_t *cnt)
 
     if (!is_all)
     {
-      if(is_hidden(entry->d_name) || is_cur_dir(entry->d_name) || is_parent_dir(entry->d_name)){
+      if (is_hidden(entry->d_name) || is_cur_dir(entry->d_name) || is_parent_dir(entry->d_name))
+      {
         continue;
       }
     }
     (*cnt)++;
-    struct dnode *ptr;
-    if(!(ptr = (struct dnode *)malloc(sizeof(struct dnode)))){
-      fprintf(stderr,"cannot allocate dnode : %s\n", strerror(errno));
-    };
+    // struct dnode *ptr;
+    // if(!(ptr = (struct dnode *)malloc(sizeof(struct dnode)))){
+    //   fprintf(stderr,"cannot allocate dnode : %s\n", strerror(errno));
+    // };
+    struct dnode *ptr = parse_dnode(concat_path(path, entry->d_name), !is_long);
     ptr->name = strdup(entry->d_name);
-    ptr->fullname = strdup(concat_path(path, entry->d_name));
     ptr->dn_next = head;
     head = ptr;
   }

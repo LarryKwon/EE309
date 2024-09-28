@@ -151,16 +151,16 @@ struct dnode *parse_dnode(const char *fullname, int follow_link)
 
   res->fullname = strdup(fullname);
   res->dn_next = NULL;
-
+  printf("parse-dnode file: %s %d %d\n", fullname, fileStat.st_blocks, fileStat.st_mode);
   // TODO: Task 3
+  res->dn_size = fileStat.st_size;
+  res->dn_blocks = fileStat.st_blocks;
+  res->dn_time = fileStat.st_mtime;
+  res->dn_ino = fileStat.st_ino;
   res->dn_mode = fileStat.st_mode;
   res->dn_nlink = fileStat.st_nlink;
   res->dn_uid = fileStat.st_uid;
   res->dn_gid = fileStat.st_gid;
-  res->dn_size = fileStat.st_size;
-  res->dn_time = fileStat.st_mtime;
-  res->dn_blocks = fileStat.st_blocks;
-  res->dn_ino = fileStat.st_ino;
 
   return res;
 }
@@ -195,7 +195,7 @@ struct dnode **sort_dnode_entries(struct dnode *head, size_t cnt)
   curr = res;
   while (head)
   {
-    // printf("while-loop file: %s %d\n", head->name, head->dn_mode);
+    printf("while-loop file: %s %d %d\n", head->name, head->dn_blocks, head->dn_mode);
     *curr++ = head;
     head = head->dn_next;
   }
@@ -231,10 +231,10 @@ struct dnode **sort_dnode_entries(struct dnode *head, size_t cnt)
     i++;
   }
 
-  // for (int i = 0; i < cnt; i++)
-  // {
-  //   printf("file: %s %d\n", (*(res + i))->name, (*(res + i))->dn_mode);
-  // }
+  for (int i = 0; i < cnt; i++)
+  {
+    printf("file: %s %d %d\n", (*(res + i))->name, (*(res + i))->dn_blocks, (*(res + i))->dn_mode);
+  }
   return res;
 }
 
