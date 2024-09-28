@@ -91,12 +91,24 @@ void print_dir(const char *path)
     printf("%s:\n", path);
   display_dnode_arr(dnode_arr, dnode_cnt);
 
-  // TODO: Task 4
-  //
-  //
-  //
-
-  free(dnode_arr);
+  // TODO: Task 4: Recursive call
+  if (is_recursive)
+  {
+    struct dnode **current = dnode_arr;
+    for (size_t i = 0; i < dnode_cnt; i++)
+    {
+      current = dnode_arr + i;
+      if (S_ISDIR((*current)->dn_mode))
+      {
+        // printf("%s\n", (*current)->name);
+        printf("\n");
+        char *new_path = concat_path(path, (*current)->name);
+        print_dir(new_path);
+        free(new_path);
+      }
+    }
+    free(dnode_arr);
+  }
 }
 
 // concat_path: concatenate two pathes with path seperator
