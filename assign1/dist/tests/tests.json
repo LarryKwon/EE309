@@ -53,6 +53,14 @@
                     "test_case_weight" : 33
                 },
                 {
+                    "test_case_name" : "cwd-single-long",
+                    "test_case_weight" : 33
+                },
+                {
+                    "test_case_name" : "dir-single-long",
+                    "test_case_weight" : 33
+                },
+                {
                     "test_case_name" : "**REDACT**",
                     "test_case_weight" : 33
                 },
