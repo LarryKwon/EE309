@@ -182,6 +182,7 @@ struct dnode **sort_dnode_entries(struct dnode *head, size_t cnt)
   curr = res;
   while (head)
   {
+    printf("while-loop file: %s %d\n", head->name, head->dn_mode);
     *curr++ = head;
     head = head->dn_next;
   }
@@ -217,9 +218,10 @@ struct dnode **sort_dnode_entries(struct dnode *head, size_t cnt)
     i++;
   }
 
-  // for(int i=0; i<cnt; i++){
-  //   printf("file: %s\n", (*(res+i))->name);
-  // }
+  for (int i = 0; i < cnt; i++)
+  {
+    printf("file: %s %d\n", (*(res + i))->name, (*(res + i))->dn_mode);
+  }
   return res;
 }
 
