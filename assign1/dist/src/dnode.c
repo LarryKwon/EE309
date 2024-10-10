@@ -130,31 +130,68 @@ struct dnode *parse_dnode(const char *fullname, int follow_link)
   if (!(res = malloc(sizeof(struct dnode))))
   {
     fprintf(stderr, "cannot allocate dnode : %s\n", strerror(errno));
+    free(res);
     return NULL; /* could not allocate dnode */
   }
 
   struct stat fileStat;
+  int fail_to_stat = 0;
 
   // TODO: Task 3
   if (follow_link)
   {
     if (stat(fullname, &fileStat) == -1)
     {
-      perror("stat");
-      free(res);
-      return NULL;
+      // printf("%s\n", fullname);
+      fprintf(stderr, "cannot stat entry %s : %s\n", fullname, strerror(errno));
+      // free(res);
+      fail_to_stat = 1;
     }
   }
   else
   {
     if (lstat(fullname, &fileStat) == -1)
     {
-      perror("lstat");
-      free(res);
-      return NULL;
+      fprintf(stderr, "cannot stat entry %s : %s\n", fullname, strerror(errno));
+      // free(res);
+      fail_to_stat = 1;
     }
   }
 
+  if (fail_to_stat == 1){
+    switch (errno) {
+      case ENOENT:
+          free(res);
+          return NULL;
+          break;
+
+      case EACCES:
+          res->fullname = strdup(fullname);
+          res->dn_next = NULL;
+          return res;
+          break;
+
+      case ELOOP:
+          res->fullname = strdup(fullname);
+          res->dn_next = NULL;
+          return res;
+
+      case ENOTDIR:
+          free(res);
+          return NULL;
+          break;
+
+      case ENAMETOOLONG:
+          free(res);
+          return NULL;
+          break;
+
+      default:
+          free(res);
+          return NULL;
+          break;
+    }
+  }
   res->fullname = strdup(fullname);
   res->dn_next = NULL;
   // printf("parse-dnode file: %s %d %d\n", fullname, fileStat.st_blocks, fileStat.st_mode);

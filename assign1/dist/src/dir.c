@@ -17,6 +17,17 @@ extern int is_long;
 // @param cnt : size_t pointer which count of dnode entries stored
 // @return : head pointer of dnode linked list
 
+void free_dnode_list(struct dnode *head) {
+    struct dnode *current = head;
+    while (current != NULL) {
+        struct dnode *next = current->dn_next;
+        free(current->fullname);
+        free(current->name); // strdup로 할당된 메모리 해제
+        free(current);       // dnode 구조체 해제
+        current = next;
+    }
+}
+
 int is_cur_dir(const char *name)
 {
   return strcmp(name, ".") == 0;
@@ -41,7 +52,8 @@ struct dnode *parse_dir(const char *path, size_t *cnt)
   DIR *dir = opendir(path);
   if (dir == NULL)
   {
-    fprintf(stderr, "cannot open directory : %s\n", strerror(errno));
+    fprintf(stderr, "cannot open directory %s : %s\n", path, strerror(errno));
+    closedir(dir);
     return NULL;
   }
   struct dirent *entry;
@@ -61,7 +73,15 @@ struct dnode *parse_dir(const char *path, size_t *cnt)
     // if(!(ptr = (struct dnode *)malloc(sizeof(struct dnode)))){
     //   fprintf(stderr,"cannot allocate dnode : %s\n", strerror(errno));
     // };
-    struct dnode *ptr = parse_dnode(concat_path(path, entry->d_name), !is_long);
+    // printf("%s\n",path);
+    // printf("%s\n",entry->d_name);
+    char* concated_path = concat_path(path, entry->d_name);
+    struct dnode *ptr = parse_dnode(concated_path, !is_long);
+    if (ptr == NULL) {
+      free(concated_path);
+      continue;
+    }
+    free(concated_path);
     ptr->name = strdup(entry->d_name);
     ptr->dn_next = head;
     head = ptr;
@@ -73,6 +93,7 @@ struct dnode *parse_dir(const char *path, size_t *cnt)
   //   printf("print files in dir: %s %d\n", current->name, current->dn_mode);
   //   current = current -> dn_next;
   // }
+  closedir(dir);
   return head;
 }
 
@@ -103,12 +124,15 @@ void print_dir(const char *path)
         // printf("%s\n", (*current)->name);
         printf("\n");
         char *new_path = concat_path(path, (*current)->name);
+        // printf("%s\n", new_path);
         print_dir(new_path);
         free(new_path);
       }
     }
-    free(dnode_arr);
+    // free(dnode_arr);
   }
+    free(dnode_arr);         
+    free_dnode_list(dnode_head); 
 }
 
 // concat_path: concatenate two pathes with path seperator
