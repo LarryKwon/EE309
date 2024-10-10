@@ -1,6 +1,6 @@
 .PHONY: all clean grade
 
-CC = gcc
+CC = gcc209
 
 INC_DIR = include
 SRC_DIR = src

@@ -207,7 +207,7 @@ struct dnode **sort_dnode_entries(struct dnode *head, size_t cnt)
   }
 
   struct dnode **head_sort = res;
-  struct dnode **target = res;
+  // struct dnode **target = res;
   int i = 1;
   // insetion sort
   while (i < cnt)

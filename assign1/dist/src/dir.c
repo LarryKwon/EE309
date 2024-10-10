@@ -45,7 +45,7 @@ struct dnode *parse_dir(const char *path, size_t *cnt)
     return NULL;
   }
   struct dirent *entry;
-  struct dnode *current;
+  // struct dnode *current;
   while ((entry = readdir(dir)) != NULL)
   {
 
@@ -66,7 +66,7 @@ struct dnode *parse_dir(const char *path, size_t *cnt)
     ptr->dn_next = head;
     head = ptr;
   }
-  current = head;
+  // current = head;
   // printf("%zd\n", *cnt);
   // for (int i = 0; i < *cnt; i++)
   // {
@@ -98,7 +98,7 @@ void print_dir(const char *path)
     for (size_t i = 0; i < dnode_cnt; i++)
     {
       current = dnode_arr + i;
-      if (S_ISDIR((*current)->dn_mode))
+      if (S_ISDIR((*current)->dn_mode) &&  !is_cur_dir((*current)->name) && !is_parent_dir((*current)->name))
       {
         // printf("%s\n", (*current)->name);
         printf("\n");
