@@ -76,7 +76,7 @@ struct dnode *parse_dir(const char *path, size_t *cnt)
     // printf("%s\n",path);
     // printf("%s\n",entry->d_name);
     char* concated_path = concat_path(path, entry->d_name);
-    struct dnode *ptr = parse_dnode(concated_path, !is_long);
+    struct dnode *ptr = parse_dnode(concated_path, 0);
     if (ptr == NULL) {
       free(concated_path);
       continue;

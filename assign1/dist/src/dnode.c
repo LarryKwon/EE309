@@ -95,7 +95,7 @@ void display_dnode_long(struct dnode *d)
   {
     if (!(lpath = malloc(MAX_PATH_SIZE + 1)))
     {
-      fprintf(stderr, "cannot allocate lpath : %s\n", strerror(errno));
+      fprintf(stderr, "cannot allocate lpath %s : %s\n", d->name, strerror(errno));
       return; /* could not allocate lpath */
     }
 
@@ -105,7 +105,7 @@ void display_dnode_long(struct dnode *d)
     //
     ret = readlink(d->fullname, lpath, MAX_PATH_SIZE);
     if(ret == -1){
-      fprintf(stderr, "cannot readlink : %s\n", strerror(errno));
+      fprintf(stderr, "cannot readlink %s : %s\n",d->fullname, strerror(errno));
       free(lpath);
       return;
     }
@@ -172,9 +172,11 @@ struct dnode *parse_dnode(const char *fullname, int follow_link)
           break;
 
       case ELOOP:
-          res->fullname = strdup(fullname);
-          res->dn_next = NULL;
-          return res;
+          free(res);
+          return NULL;
+          // res->fullname = strdup(fullname);
+          // res->dn_next = NULL;
+          // return res;
 
       case ENOTDIR:
           free(res);
