@@ -14,7 +14,11 @@
 
 #include <unistd.h>
 
-enum {FALSE, TRUE};
+enum
+{
+   FALSE,
+   TRUE
+};
 
 /*--------------------------------------------------------------------*/
 
@@ -22,7 +26,10 @@ enum {FALSE, TRUE};
    them in the bss section. */
 
 /* The maximum allowable number of calls of HeapMgr_malloc(). */
-enum {MAX_CALLS = 1000000};
+enum
+{
+   MAX_CALLS = 1000000
+};
 
 /* Memory chunks allocated by HeapMgr_malloc(). */
 static char *apcChunks[MAX_CALLS];
@@ -35,7 +42,7 @@ static int aiSizes[MAX_CALLS];
 /* Function declarations. */
 
 static void getArgs(int argc, char *argv[],
-   int *piTestNum, int *piCount, int *piSize);
+                    int *piTestNum, int *piCount, int *piSize);
 static void setCpuLimit(void);
 static void testLifoFixed(int iCount, int iSize);
 static void testFifoFixed(int iCount, int iSize);
@@ -50,10 +57,9 @@ static void testWorst(int iCount, int iSize);
 /* apcTestName is an array containing the names of the tests. */
 
 static char *apcTestName[] =
-{
-   "LifoFixed", "FifoFixed", "LifoRandom", "FifoRandom",
-   "RandomFixed", "RandomRandom", "Worst"
-};
+    {
+        "LifoFixed", "FifoFixed", "LifoRandom", "FifoRandom",
+        "RandomFixed", "RandomRandom", "Worst"};
 
 /*--------------------------------------------------------------------*/
 
@@ -63,10 +69,9 @@ static char *apcTestName[] =
 
 typedef void (*TestFunction)(int, int);
 static TestFunction apfTestFunction[] =
-{
-   testLifoFixed, testFifoFixed, testLifoRandom, testFifoRandom,
-   testRandomFixed, testRandomRandom, testWorst
-};
+    {
+        testLifoFixed, testFifoFixed, testLifoRandom, testFifoRandom,
+        testRandomFixed, testRandomRandom, testWorst};
 
 /*--------------------------------------------------------------------*/
 
@@ -133,7 +138,7 @@ int main(int argc, char *argv[])
       CPU time and heap memory consumed. */
    iMemoryConsumed = (int)(pcFinalBreak - pcInitialBreak);
    dTimeConsumed =
-      ((double)(iFinalClock - iInitialClock)) / CLOCKS_PER_SEC;
+       ((double)(iFinalClock - iInitialClock)) / CLOCKS_PER_SEC;
 
    /* Finish printing the results. */
    printf("%6.2f %10d\n", dTimeConsumed, iMemoryConsumed);
@@ -143,7 +148,7 @@ int main(int argc, char *argv[])
 /*--------------------------------------------------------------------*/
 
 static void getArgs(int argc, char *argv[],
-   int *piTestNum, int *piCount, int *piSize)
+                    int *piTestNum, int *piCount, int *piSize)
 
 /* Get command-line arguments *piTestNum, *piCount, and *piSize,
    from argument vector argv.  argc is the number of used elements
@@ -237,7 +242,7 @@ static void assure(int iSuccessful, int iLineNum)
    at line iLineNum failed. */
 
 {
-   if (! iSuccessful)
+   if (!iSuccessful)
       fprintf(stderr, "Test at line %d failed.\n", iLineNum);
 }
 
@@ -254,10 +259,11 @@ static void testLifoFixed(int iCount, int iSize)
    /* Call HeapMgr_malloc() repeatedly to fill apcChunks. */
    for (i = 0; i < iCount; i++)
    {
-      apcChunks[i] = (char*)HeapMgr_malloc((size_t)iSize);
+      printf("%d\n", i);
+      apcChunks[i] = (char *)HeapMgr_malloc((size_t)iSize);
       ASSURE(apcChunks[i] != NULL);
 
-      #ifndef NDEBUG
+#ifndef NDEBUG
       {
          /* Fill the newly allocated chunk with some character.
             The character is derived from the last digit of iRand.
@@ -268,14 +274,15 @@ static void testLifoFixed(int iCount, int iSize)
          for (iCol = 0; iCol < iSize; iCol++)
             apcChunks[i][iCol] = c;
       }
-      #endif
+#endif
    }
 
    /* Call HeapMgr_free() repeatedly to free the chunks in
       LIFO order. */
    for (i = iCount - 1; i >= 0; i--)
    {
-      #ifndef NDEBUG
+      printf("%d\n", i);
+#ifndef NDEBUG
       {
          /* Check the chunk that is about to be freed to make sure
             that its contents haven't been corrupted. */
@@ -284,7 +291,7 @@ static void testLifoFixed(int iCount, int iSize)
          for (iCol = 0; iCol < iSize; iCol++)
             ASSURE(apcChunks[i][iCol] == c);
       }
-      #endif
+#endif
 
       HeapMgr_free(apcChunks[i]);
    }
@@ -303,10 +310,10 @@ static void testFifoFixed(int iCount, int iSize)
    /* Call HeapMgr_malloc() repeatedly to fill apcChunks. */
    for (i = 0; i < iCount; i++)
    {
-      apcChunks[i] = (char*)HeapMgr_malloc((size_t)iSize);
+      apcChunks[i] = (char *)HeapMgr_malloc((size_t)iSize);
       ASSURE(apcChunks[i] != NULL);
 
-      #ifndef NDEBUG
+#ifndef NDEBUG
       {
          /* Fill the newly allocated chunk with some character.
             The character is derived from the last digit of iRand.
@@ -317,14 +324,14 @@ static void testFifoFixed(int iCount, int iSize)
          for (iCol = 0; iCol < iSize; iCol++)
             apcChunks[i][iCol] = c;
       }
-      #endif
+#endif
    }
 
    /* Call HeapMgr_free() repeatedly to free the chunks in
       FIFO order. */
    for (i = 0; i < iCount; i++)
    {
-      #ifndef NDEBUG
+#ifndef NDEBUG
       {
          /* Check the chunk that is about to be freed to make sure
             that its contents haven't been corrupted. */
@@ -333,7 +340,7 @@ static void testFifoFixed(int iCount, int iSize)
          for (iCol = 0; iCol < iSize; iCol++)
             ASSURE(apcChunks[i][iCol] == c);
       }
-      #endif
+#endif
 
       HeapMgr_free(apcChunks[i]);
    }
@@ -357,10 +364,10 @@ static void testLifoRandom(int iCount, int iSize)
    /* Call HeapMgr_malloc() repeatedly to fill apcChunks. */
    for (i = 0; i < iCount; i++)
    {
-      apcChunks[i] = (char*)HeapMgr_malloc((size_t)aiSizes[i]);
+      apcChunks[i] = (char *)HeapMgr_malloc((size_t)aiSizes[i]);
       ASSURE(apcChunks[i] != NULL);
 
-      #ifndef NDEBUG
+#ifndef NDEBUG
       {
          /* Fill the newly allocated chunk with some character.
             The character is derived from the last digit of iRand.
@@ -371,14 +378,14 @@ static void testLifoRandom(int iCount, int iSize)
          for (iCol = 0; iCol < aiSizes[i]; iCol++)
             apcChunks[i][iCol] = c;
       }
-      #endif
+#endif
    }
 
    /* Call HeapMgr_free() repeatedly to free the chunks in
       LIFO order. */
    for (i = iCount - 1; i >= 0; i--)
    {
-      #ifndef NDEBUG
+#ifndef NDEBUG
       {
          /* Check the chunk that is about to be freed to make sure
             that its contents haven't been corrupted. */
@@ -387,7 +394,7 @@ static void testLifoRandom(int iCount, int iSize)
          for (iCol = 0; iCol < aiSizes[i]; iCol++)
             ASSURE(apcChunks[i][iCol] == c);
       }
-      #endif
+#endif
 
       HeapMgr_free(apcChunks[i]);
    }
@@ -411,10 +418,10 @@ static void testFifoRandom(int iCount, int iSize)
    /* Call HeapMgr_malloc() repeatedly to fill apcChunks. */
    for (i = 0; i < iCount; i++)
    {
-      apcChunks[i] = (char*)HeapMgr_malloc((size_t)aiSizes[i]);
+      apcChunks[i] = (char *)HeapMgr_malloc((size_t)aiSizes[i]);
       ASSURE(apcChunks[i] != NULL);
 
-      #ifndef NDEBUG
+#ifndef NDEBUG
       {
          /* Fill the newly allocated chunk with some character.
             The character is derived from the last digit of iRand.
@@ -425,14 +432,14 @@ static void testFifoRandom(int iCount, int iSize)
          for (iCol = 0; iCol < aiSizes[i]; iCol++)
             apcChunks[i][iCol] = c;
       }
-      #endif
+#endif
    }
 
    /* Call HeapMgr_free() repeatedly to free the chunks in
       FIFO order. */
    for (i = 0; i < iCount; i++)
    {
-      #ifndef NDEBUG
+#ifndef NDEBUG
       {
          /* Check the chunk that is about to be freed to make sure
             that its contents haven't been corrupted. */
@@ -441,7 +448,7 @@ static void testFifoRandom(int iCount, int iSize)
          for (iCol = 0; iCol < aiSizes[i]; iCol++)
             ASSURE(apcChunks[i][iCol] == c);
       }
-      #endif
+#endif
 
       HeapMgr_free(apcChunks[i]);
    }
@@ -466,10 +473,10 @@ static void testRandomFixed(int iCount, int iSize)
    iRand = 0;
    for (i = 0; i < iCount; i++)
    {
-      apcChunks[iRand] = (char*)HeapMgr_malloc((size_t)iSize);
+      apcChunks[iRand] = (char *)HeapMgr_malloc((size_t)iSize);
       ASSURE(apcChunks[iRand] != NULL);
 
-      #ifndef NDEBUG
+#ifndef NDEBUG
       {
          /* Fill the newly allocated chunk with some character.
             The character is derived from the last digit of iRand.
@@ -480,7 +487,7 @@ static void testRandomFixed(int iCount, int iSize)
          for (iCol = 0; iCol < iSize; iCol++)
             apcChunks[iRand][iCol] = c;
       }
-      #endif
+#endif
 
       /* Assign some random integer to iRand. */
       iRand = rand() % iLogicalArraySize;
@@ -489,7 +496,7 @@ static void testRandomFixed(int iCount, int iSize)
          apcChunks[iRand] to NULL. */
       if (apcChunks[iRand] != NULL)
       {
-         #ifndef NDEBUG
+#ifndef NDEBUG
          {
             /* Check the chunk that is about to be freed to make sure
                that its contents haven't been corrupted. */
@@ -498,7 +505,7 @@ static void testRandomFixed(int iCount, int iSize)
             for (iCol = 0; iCol < iSize; iCol++)
                ASSURE(apcChunks[iRand][iCol] == c);
          }
-         #endif
+#endif
 
          HeapMgr_free(apcChunks[iRand]);
          apcChunks[iRand] = NULL;
@@ -510,7 +517,7 @@ static void testRandomFixed(int iCount, int iSize)
    {
       if (apcChunks[i] != NULL)
       {
-         #ifndef NDEBUG
+#ifndef NDEBUG
          {
             /* Check the chunk that is about to be freed to make sure
                that its contents haven't been corrupted. */
@@ -519,7 +526,7 @@ static void testRandomFixed(int iCount, int iSize)
             for (iCol = 0; iCol < iSize; iCol++)
                ASSURE(apcChunks[i][iCol] == c);
          }
-         #endif
+#endif
 
          HeapMgr_free(apcChunks[i]);
          apcChunks[i] = NULL;
@@ -551,10 +558,10 @@ static void testRandomRandom(int iCount, int iSize)
    iRand = 0;
    for (i = 0; i < iCount; i++)
    {
-      apcChunks[iRand] = (char*)HeapMgr_malloc((size_t)aiSizes[iRand]);
+      apcChunks[iRand] = (char *)HeapMgr_malloc((size_t)aiSizes[iRand]);
       ASSURE(apcChunks[iRand] != NULL);
 
-      #ifndef NDEBUG
+#ifndef NDEBUG
       {
          /* Fill the newly allocated chunk with some character.
             The character is derived from the last digit of iRand.
@@ -565,7 +572,7 @@ static void testRandomRandom(int iCount, int iSize)
          for (iCol = 0; iCol < aiSizes[iRand]; iCol++)
             apcChunks[iRand][iCol] = c;
       }
-      #endif
+#endif
 
       /* Assign some random integer to iRand. */
       iRand = rand() % iLogicalArraySize;
@@ -574,7 +581,7 @@ static void testRandomRandom(int iCount, int iSize)
          apcChunks[iRand] to NULL. */
       if (apcChunks[iRand] != NULL)
       {
-         #ifndef NDEBUG
+#ifndef NDEBUG
          {
             /* Check the chunk that is about to be freed to make sure
                that its contents haven't been corrupted. */
@@ -583,7 +590,7 @@ static void testRandomRandom(int iCount, int iSize)
             for (iCol = 0; iCol < aiSizes[iRand]; iCol++)
                ASSURE(apcChunks[iRand][iCol] == c);
          }
-         #endif
+#endif
 
          HeapMgr_free(apcChunks[iRand]);
          apcChunks[iRand] = NULL;
@@ -595,7 +602,7 @@ static void testRandomRandom(int iCount, int iSize)
    {
       if (apcChunks[i] != NULL)
       {
-         #ifndef NDEBUG
+#ifndef NDEBUG
          {
             /* Check the chunk that is about to be freed to make sure
                that its contents haven't been corrupted. */
@@ -604,7 +611,7 @@ static void testRandomRandom(int iCount, int iSize)
             for (iCol = 0; iCol < aiSizes[i]; iCol++)
                ASSURE(apcChunks[i][iCol] == c);
          }
-         #endif
+#endif
 
          HeapMgr_free(apcChunks[i]);
          apcChunks[i] = NULL;
@@ -631,19 +638,19 @@ static void testWorst(int iCount, int iSize)
       apcChunks[i] = HeapMgr_malloc((size_t)((i * iSize / iCount) + 1));
       ASSURE((i == 0) || (apcChunks[i] != NULL));
 
-      #ifndef NDEBUG
+#ifndef NDEBUG
       {
          /* Fill the newly allocated chunk with some character.
             The character is derived from the last digit of iRand.
             So later, given iRand, we can check to make sure that
             the contents haven't been corrupted. */
          int iCol;
-	 int max = (i * iSize / iCount) + 1;
+         int max = (i * iSize / iCount) + 1;
          char c = (char)((i % 10) + '0');
          for (iCol = 0; iCol < max; iCol++)
             apcChunks[i][iCol] = c;
       }
-      #endif
+#endif
       i++;
       apcChunks[i] = HeapMgr_malloc((size_t)1);
       i++;
@@ -658,17 +665,17 @@ static void testWorst(int iCount, int iSize)
    {
       i--;
       i--;
-      #ifndef NDEBUG
+#ifndef NDEBUG
       {
          /* Check the chunk that is about to be freed to make sure
             that its contents haven't been corrupted. */
          int iCol;
-	 int max = (i * iSize / iCount) + 1;
+         int max = (i * iSize / iCount) + 1;
          char c = (char)((i % 10) + '0');
          for (iCol = 0; iCol < max; iCol++)
             ASSURE(apcChunks[i][iCol] == c);
       }
-      #endif
+#endif
       HeapMgr_free(apcChunks[i]);
    }
 

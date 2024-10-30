@@ -165,16 +165,20 @@ static Chunk_T HeapMgr_useChunk(Chunk_T oChunk,
     {
         if (oPrevChunk == NULL)
             oFreeList = Chunk_getNextInList(oChunk);
-        else {
+        else
+        {
             Chunk_setNextInList(oPrevChunk, Chunk_getNextInList(oChunk));
             Chunk_setPrevInList(Chunk_getNextInList(oChunk), oPrevChunk);
         }
+        Chunk_setStatus(oChunk, CHUNK_INUSE);
         return oChunk;
     }
 
     /* oChunk is too big, so use the tail end of it. */
     Chunk_setUnits(oChunk, uiChunkUnits - uiUnits);
+    Chunk_setStatus(oChunk, CHUNK_INUSE);
     oNewChunk = Chunk_getNextInMem(oChunk, oHeapStart, oHeapEnd);
+    Chunk_setStatus(oNewChunk, CHUNK_FREE);
     Chunk_setUnits(oNewChunk, uiUnits);
     return oNewChunk;
 }
@@ -212,6 +216,7 @@ void *HeapMgr_malloc(size_t uiBytes)
         uiBytes++;
     uiUnits = uiBytes / uiUnitSize;
     uiUnits++; /* Allow room for a header. */
+    uiUnits++; /* Allow room for a footer */
 
     oPrevPrevChunk = NULL;
     oPrevChunk = NULL;
