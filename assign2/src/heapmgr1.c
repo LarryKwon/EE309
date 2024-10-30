@@ -259,6 +259,69 @@ void *HeapMgr_malloc(size_t uiBytes)
 
 /*--------------------------------------------------------------------*/
 
+// void HeapMgr_free(void *pvBytes)
+
+// /* Deallocate the space pointed to by pvBytes.  Do nothing if pvBytes
+//    is NULL.  It is an unchecked runtime error for pvBytes to be a
+//    pointer to space that was not previously allocated by
+//    HeapMgr_malloc(). */
+
+// {
+//     Chunk_T oChunk;
+//     Chunk_T oNextChunk;
+//     Chunk_T oPrevChunk;
+
+//     assert(HeapMgr_isValid());
+
+//     if (pvBytes == NULL)
+//         return;
+
+//     oChunk = (Chunk_T)((char *)pvBytes - Chunk_getUnitSize());
+//     assert(Chunk_isValid(oChunk, oHeapStart, oHeapEnd));
+
+//     /* Splice the given chunk into the free list at the correct spot.
+//        The free list is kept in increasing order by memory address. */
+//     oPrevChunk = NULL;
+//     oNextChunk = oFreeList;
+//     for (;;)
+//     {
+//         if ((oNextChunk == NULL) || (oNextChunk > oChunk))
+//         {
+//             if (oPrevChunk == NULL)
+//                 oFreeList = oChunk;
+//             else
+//                 Chunk_setNextInList(oPrevChunk, oChunk);
+//             Chunk_setNextInList(oChunk, oNextChunk);
+//             break;
+//         }
+//         oPrevChunk = oNextChunk;
+//         oNextChunk = Chunk_getNextInList(oNextChunk);
+//     }
+
+//     /* Coalesce the given chunk and the previous one if appropriate. */
+//     if (oPrevChunk != NULL)
+//         if (Chunk_getNextInMem(oPrevChunk, oHeapStart, oHeapEnd) == oChunk)
+//         {
+//             Chunk_setUnits(oPrevChunk,
+//                            Chunk_getUnits(oPrevChunk) + Chunk_getUnits(oChunk));
+//             Chunk_setNextInList(oPrevChunk,
+//                                 Chunk_getNextInList(oChunk));
+//             oChunk = oPrevChunk;
+//         }
+
+//     /* Coalesce the given chunk and the next one if appropriate. */
+//     if (oNextChunk != NULL)
+//         if (Chunk_getNextInMem(oChunk, oHeapStart, oHeapEnd) == oNextChunk)
+//         {
+//             Chunk_setUnits(oChunk,
+//                            Chunk_getUnits(oChunk) + Chunk_getUnits(oNextChunk));
+//             Chunk_setNextInList(oChunk,
+//                                 Chunk_getNextInList(oNextChunk));
+//         }
+
+//     assert(HeapMgr_isValid());
+// }
+
 void HeapMgr_free(void *pvBytes)
 
 /* Deallocate the space pointed to by pvBytes.  Do nothing if pvBytes
@@ -279,45 +342,33 @@ void HeapMgr_free(void *pvBytes)
     oChunk = (Chunk_T)((char *)pvBytes - Chunk_getUnitSize());
     assert(Chunk_isValid(oChunk, oHeapStart, oHeapEnd));
 
-    /* Splice the given chunk into the free list at the correct spot.
-       The free list is kept in increasing order by memory address. */
-    oPrevChunk = NULL;
-    oNextChunk = oFreeList;
-    for (;;)
+    oNextChunk = Chunk_getNextInMem(oChunk, oHeapStart, oHeapEnd);
+    assert(Chunk_isValid(oNextChunk, oHeapStart, oHeapEnd));
+
+    oPrevChunk = Chunk_getPrevInMem(oChunk, oHeapStart, oHeapEnd);
+    assert(Chunk_isValid(oNextChunk, oHeapStart, oHeapEnd));
+
+    // Coalesce with the next chunk if it is free
+    if (oNextChunk != NULL && Chunk_getStatus(oNextChunk) == CHUNK_FREE)
     {
-        if ((oNextChunk == NULL) || (oNextChunk > oChunk))
-        {
-            if (oPrevChunk == NULL)
-                oFreeList = oChunk;
-            else
-                Chunk_setNextInList(oPrevChunk, oChunk);
-            Chunk_setNextInList(oChunk, oNextChunk);
-            break;
-        }
-        oPrevChunk = oNextChunk;
-        oNextChunk = Chunk_getNextInList(oNextChunk);
+        Chunk_setUnits(oChunk, Chunk_getUnits(oChunk) + Chunk_getUnits(oNextChunk));
+        Chunk_setNextInList(oChunk, Chunk_getNextInList(oNextChunk));
+    }
+    else
+    {
+        Chunk_setNextInList(oChunk, oFreeList);
     }
 
-    /* Coalesce the given chunk and the previous one if appropriate. */
-    if (oPrevChunk != NULL)
-        if (Chunk_getNextInMem(oPrevChunk, oHeapStart, oHeapEnd) == oChunk)
-        {
-            Chunk_setUnits(oPrevChunk,
-                           Chunk_getUnits(oPrevChunk) + Chunk_getUnits(oChunk));
-            Chunk_setNextInList(oPrevChunk,
-                                Chunk_getNextInList(oChunk));
-            oChunk = oPrevChunk;
-        }
+    // Coalesce with the previous chunk if it is free
+    if (oPrevChunk != NULL && Chunk_getStatus(oPrevChunk) == CHUNK_FREE)
+    {
+        Chunk_setUnits(oPrevChunk, Chunk_getUnits(oPrevChunk) + Chunk_getUnits(oChunk));
+        Chunk_setNextInList(oPrevChunk, Chunk_getNextInList(oChunk));
+        oChunk = oPrevChunk;
+    }
 
-    /* Coalesce the given chunk and the next one if appropriate. */
-    if (oNextChunk != NULL)
-        if (Chunk_getNextInMem(oChunk, oHeapStart, oHeapEnd) == oNextChunk)
-        {
-            Chunk_setUnits(oChunk,
-                           Chunk_getUnits(oChunk) + Chunk_getUnits(oNextChunk));
-            Chunk_setNextInList(oChunk,
-                                Chunk_getNextInList(oNextChunk));
-        }
-
+    // Update the root to point to the new chunk (LIFO insertion)
+    oFreeList = oChunk;
+    // Chunk_setUnits(oChunk, Chunk_getUnits(oChunk));
     assert(HeapMgr_isValid());
 }
