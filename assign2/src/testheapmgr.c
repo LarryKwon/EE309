@@ -257,9 +257,13 @@ static void testLifoFixed(int iCount, int iSize)
    int i;
 
    /* Call HeapMgr_malloc() repeatedly to fill apcChunks. */
+   // clock_t start;
+   // clock_t end;
+   // double elapsed;
+   // start = clock();
    for (i = 0; i < iCount; i++)
    {
-      printf("%d\n", i);
+      // printf("%d\n", i);
       apcChunks[i] = (char *)HeapMgr_malloc((size_t)iSize);
       ASSURE(apcChunks[i] != NULL);
 
@@ -275,13 +279,19 @@ static void testLifoFixed(int iCount, int iSize)
             apcChunks[i][iCol] = c;
       }
 #endif
+      if (i % 100 == 0)
+      {
+         // end = clock();
+         // elapsed = ((double)(end - start) / CLOCKS_PER_SEC) * 1000;
+         // printf("Execution Time: %.8f ms\n", elapsed);
+      }
    }
 
    /* Call HeapMgr_free() repeatedly to free the chunks in
       LIFO order. */
    for (i = iCount - 1; i >= 0; i--)
    {
-      printf("%d\n", i);
+      // printf("%d\n", i);
 #ifndef NDEBUG
       {
          /* Check the chunk that is about to be freed to make sure

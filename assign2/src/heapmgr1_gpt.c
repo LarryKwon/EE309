@@ -5,7 +5,7 @@
 /*--------------------------------------------------------------------*/
 
 #include "heapmgr.h"
-#include "chunk.h"
+#include "chunkbase.h"
 #include <stddef.h>
 #include <stdio.h> /* For debugging */
 #include <assert.h>
@@ -159,6 +159,7 @@ static Chunk_T HeapMgr_useChunk(Chunk_T oChunk,
 {
     Chunk_T oNewChunk;
     size_t uiChunkUnits = Chunk_getUnits(oChunk);
+    // printf("%zd %zd %s\n", uiChunkUnits, uiUnits + (size_t)MIN_UNITS_PER_CHUNK, "right size?");
 
     /* If oChunk is close to the right size, then use it. */
     if (uiChunkUnits < uiUnits + (size_t)MIN_UNITS_PER_CHUNK)
@@ -171,6 +172,7 @@ static Chunk_T HeapMgr_useChunk(Chunk_T oChunk,
             // Chunk_setPrevInList(Chunk_getNextInList(oChunk), oPrevChunk);
         }
         // Chunk_setStatus(oChunk, CHUNK_INUSE);
+        // printf("%s\n", "right size!!");
         return oChunk;
     }
 
@@ -240,6 +242,7 @@ void *HeapMgr_malloc(size_t uiBytes)
     /* Ask the OS for more memory, and create a new chunk (or expand
        the existing chunk) at the end of the free list. */
     oChunk = HeapMgr_getMoreMemory(oPrevChunk, uiUnits);
+    printf("%s\n", "more memory");
     if (oChunk == NULL)
     {
         assert(HeapMgr_isValid());

@@ -16,7 +16,7 @@ testheapmgrbase: testheapmgr.c heapmgrbase.c chunkbase.c
 testheapmgr1: testheapmgr.c heapmgr1.c chunk.c
 	$(CC) $(CFLAGS) $^ -o $@
 
-testheapmgr1_gpt: testheapmgr.c heapmgr1_gpt.c chunk.c
+testheapmgr1_gpt: testheapmgr.c heapmgr1_gpt.c chunkbase.c
 	$(CC) $(CFLAGS) $^ -o $@
 
 testheapmgr2: testheapmgr.c heapmgr2.c chunk.c

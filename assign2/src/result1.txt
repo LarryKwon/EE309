@@ -1,0 +1,10 @@
+===============================================================
+  ./testheapmgr1    LifoFixed  100000   1000  17.64  109232128
+  ./testheapmgr1    FifoFixed  100000   1000  16.56  109232128
+  ./testheapmgr1   LifoRandom  100000   1000   
+  ./testheapmgr1   FifoRandom  100000   1000   
+  ./testheapmgr1  RandomFixed  100000   1000   0.05   64765952
+  ./testheapmgr1 RandomRandom  100000   1000   
+  ./testheapmgr1        Worst  100000   1000 
+  ---------------------------------------------------------------
+  ./testheapmgr1    LifoFixed  100000  10000 
