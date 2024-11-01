@@ -1,0 +1,93 @@
+HyeokTae Kwon, 20180036
+- seungjong ha: who collaborated with me.
+- I discussed with him about each observations through experiments. (eg. how to optimize the bins' table in heapmgr2?)
+
+The CPU times and heap memory consumed by testheapmgr using heapmgrgnu.c, heapmgrkr.c, heapmgrbase.c, heapmgr1.c, and heapmgr2.c
+
+      Executable         Test   Count   Size   Time        Mem
+===============================================================
+./testheapmgrgnu    LifoFixed  100000   1000   0.07  100700160
+./testheapmgrgnu    FifoFixed  100000   1000   0.07       8192
+./testheapmgrgnu   LifoRandom  100000   1000   0.04   51499008
+./testheapmgrgnu   FifoRandom  100000   1000   0.03   51499008
+./testheapmgrgnu  RandomFixed  100000   1000   0.02   29040640
+./testheapmgrgnu RandomRandom  100000   1000   0.02   16355328
+./testheapmgrgnu        Worst  100000   1000   0.01   27303936
+---------------------------------------------------------------
+./testheapmgrgnu    LifoFixed  100000  10000   0.39          0
+./testheapmgrgnu    FifoFixed  100000  10000   0.23          0
+./testheapmgrgnu   LifoRandom  100000  10000   0.18  501215232
+./testheapmgrgnu   FifoRandom  100000  10000   0.18   48513024
+./testheapmgrgnu  RandomFixed  100000  10000   0.09          0
+./testheapmgrgnu RandomRandom  100000  10000   0.07  158683136
+./testheapmgrgnu        Worst  100000  10000   0.09  252338176
+===============================================================
+  ./testheapmgr2    LifoFixed  100000   1000   0.12  104038400
+  ./testheapmgr2    FifoFixed  100000   1000   0.12  104038400
+  ./testheapmgr2   LifoRandom  100000   1000   0.08   54001664
+  ./testheapmgr2   FifoRandom  100000   1000   0.08   54001664
+  ./testheapmgr2  RandomFixed  100000   1000   0.05   32980992
+  ./testheapmgr2 RandomRandom  100000   1000   0.04   17121280
+  ./testheapmgr2        Worst  100000   1000   0.07   29409280
+---------------------------------------------------------------
+  ./testheapmgr2    LifoFixed  100000  10000   0.49 1003208704
+  ./testheapmgr2    FifoFixed  100000  10000   0.48 1003208704
+  ./testheapmgr2   LifoRandom  100000  10000   0.31  503726080
+  ./testheapmgr2   FifoRandom  100000  10000   0.32  503726080
+  ./testheapmgr2  RandomFixed  100000  10000   0.17  317980672
+  ./testheapmgr2 RandomRandom  100000  10000   0.11  159563776
+  ./testheapmgr2        Worst  100000  10000   0.19  254410752
+===============================================================
+  ./testheapmgr1    LifoFixed  100000   1000   0.08  104038400
+  ./testheapmgr1    FifoFixed  100000   1000   0.08  104038400
+  ./testheapmgr1   LifoRandom  100000   1000   0.05   54001664
+  ./testheapmgr1   FifoRandom  100000   1000   0.05   54001664
+  ./testheapmgr1  RandomFixed  100000   1000   0.04   32980992
+  ./testheapmgr1 RandomRandom  100000   1000   0.02   17121280
+  ./testheapmgr1        Worst  100000   1000  13.06   29409280
+---------------------------------------------------------------
+  ./testheapmgr1    LifoFixed  100000  10000   0.46 1003208704
+  ./testheapmgr1    FifoFixed  100000  10000   0.46 1003208704
+  ./testheapmgr1   LifoRandom  100000  10000   0.27  503726080
+  ./testheapmgr1   FifoRandom  100000  10000   0.28  503726080
+  ./testheapmgr1  RandomFixed  100000  10000   0.16  317980672
+  ./testheapmgr1 RandomRandom  100000  10000   0.10  159563776
+  ./testheapmgr1        Worst  100000  10000  24.23  254410752
+===============================================================
+./testheapmgrbase    LifoFixed  100000   1000   0.07  102400000
+./testheapmgrbase    FifoFixed  100000   1000   0.07  102400000
+./testheapmgrbase   LifoRandom  100000   1000   0.04   52412416
+./testheapmgrbase   FifoRandom  100000   1000   0.04   52412416
+./testheapmgrbase  RandomFixed  100000   1000   1.67   32456704
+./testheapmgrbase RandomRandom  100000   1000   1.15   16613376
+./testheapmgrbase        Worst  100000   1000  10.70   27869184
+---------------------------------------------------------------
+./testheapmgrbase    LifoFixed  100000  10000 ./testheapimp: line 27: 1268718 Killed                  $executablefile LifoFixed 100000 10000
+./testheapmgrbase    FifoFixed  100000  10000 ./testheapimp: line 28: 1269405 Killed                  $executablefile FifoFixed 100000 10000
+./testheapmgrbase   LifoRandom  100000  10000 120.43  506347520
+./testheapmgrbase   FifoRandom  100000  10000  68.19  506347520
+./testheapmgrbase  RandomFixed  100000  10000  33.84  370262016
+./testheapmgrbase RandomRandom  100000  10000   9.05  160677888
+./testheapmgrbase        Worst  100000  10000  39.26  344309760
+===============================================================
+ ./testheapmgrkr    LifoFixed  100000   1000   0.06  102400000
+ ./testheapmgrkr    FifoFixed  100000   1000   0.06  102400000
+ ./testheapmgrkr   LifoRandom  100000   1000   0.24   52625408
+ ./testheapmgrkr   FifoRandom  100000   1000   0.17   52625408
+ ./testheapmgrkr  RandomFixed  100000   1000   1.69   32456704
+ ./testheapmgrkr RandomRandom  100000   1000   1.56   16613376
+ ./testheapmgrkr        Worst  100000   1000  10.00   28278784
+---------------------------------------------------------------
+ ./testheapmgrkr    LifoFixed  100000  10000 ./testheapimp: line 27: 1270242 Killed                  $executablefile LifoFixed 100000 10000
+ ./testheapmgrkr    FifoFixed  100000  10000 ./testheapimp: line 28: 1270989 Killed                  $executablefile FifoFixed 100000 10000
+ ./testheapmgrkr   LifoRandom  100000  10000 110.37  525221888
+ ./testheapmgrkr   FifoRandom  100000  10000  72.37  525221888
+ ./testheapmgrkr  RandomFixed  100000  10000  42.43  370802688
+ ./testheapmgrkr RandomRandom  100000  10000  12.22  164364288
+ ./testheapmgrkr        Worst  100000  10000  73.51  345800704
+
+
+(Optionally) An indication of how much time you spent doing the assignment.
+- I spent whole three days for this assignment(Maybe 20+ hours)
+(Optionally) Your assessment of the assignment.
+- Very good assignments, but I think more techniques that can trace or investigate the memory layout at code.
