@@ -114,7 +114,7 @@ static size_t Determine_bin(size_t uiUnits)
 }
 /*--------------------------------------------------------------------*/
 
-static void Insert_free(Chunk_T oChunk, size_t bin)
+static void InsertToFreeList(Chunk_T oChunk, size_t bin)
 {
     /*
     LIFO Insert
@@ -129,7 +129,7 @@ static void Insert_free(Chunk_T oChunk, size_t bin)
     oBinSizeList[bin] += 1;
 }
 
-static void Remove_free(Chunk_T oChunk, size_t bin)
+static void RemoveFromFreeList(Chunk_T oChunk, size_t bin)
 {
     Chunk_T oNext = Chunk_getNextInList(oChunk);
     Chunk_T oPrev = Chunk_getPrevInList(oChunk);
@@ -162,21 +162,22 @@ static Chunk_T HeapMgr_getMoreMemory(size_t uiUnits)
     if (oChunk == (Chunk_T)-1)
         return NULL;
 
-    /* Update oHeapEnd */
+    /* Determine where the program break is now, and note the
+       end of the heap. */
     oHeapEnd = (Chunk_T)sbrk(0);
 
     /* Set the fields of the new chunk. */
     Chunk_setUnits(oChunk, uiRequestUnits);
     Chunk_setStatus(oChunk, CHUNK_FREE);
 
-    /* Try to coalesce with previous chunk if possible */
+    /* Coalesce the new chunk and the previous one if appropriate. */
     Chunk_T oPrevChunk = Chunk_getPrevInMem(oChunk, oHeapStart, oHeapEnd);
     if (oPrevChunk != NULL && Chunk_getStatus(oPrevChunk) == CHUNK_FREE)
     {
         size_t prevBin = Determine_bin(Chunk_getUnits(oPrevChunk));
-        Remove_free(oPrevChunk, prevBin);
+        RemoveFromFreeList(oPrevChunk, prevBin);
 
-        /* Coalesce them */
+        /* Coalesce */
         size_t uiTotalUnits = Chunk_getUnits(oPrevChunk) + Chunk_getUnits(oChunk);
         Chunk_setUnits(oPrevChunk, uiTotalUnits);
         Chunk_setStatus(oPrevChunk, CHUNK_FREE);
@@ -184,9 +185,9 @@ static Chunk_T HeapMgr_getMoreMemory(size_t uiUnits)
         oChunk = oPrevChunk;
     }
 
-    /* Insert the new or coalesced chunk into the proper bin */
+    /* Insert the new/coalesced chunk into the proper bin */
     size_t bin = Determine_bin(Chunk_getUnits(oChunk));
-    Insert_free(oChunk, bin);
+    InsertToFreeList(oChunk, bin);
 
     return oChunk;
 }
@@ -195,26 +196,26 @@ static Chunk_T HeapMgr_getMoreMemory(size_t uiUnits)
 
 static Chunk_T HeapMgr_useChunk(Chunk_T oChunk, size_t uiUnits)
 {
-    /* size of chunk */
     size_t uiChunkUnits = Chunk_getUnits(oChunk);
     size_t oldBin = Determine_bin(uiChunkUnits);
 
     /* uiUnits : the size we want to allocate */
     if (uiChunkUnits < uiUnits + MIN_UNITS_PER_CHUNK)
     {
-        /* Chunk is close in size, use it directly */
-        Remove_free(oChunk, oldBin);
+        /* If oChunk is close to the right size, then use it. */
+        RemoveFromFreeList(oChunk, oldBin);
         Chunk_setStatus(oChunk, CHUNK_INUSE);
         return oChunk;
     }
     else
     {
-        /* Split the chunk */
-        Remove_free(oChunk, oldBin);
+        /* oChunk is too big, so use the tail end of it. */
+        /* Split */
+        RemoveFromFreeList(oChunk, oldBin);
         Chunk_setUnits(oChunk, uiUnits);
         Chunk_setStatus(oChunk, CHUNK_INUSE);
 
-        /* Create the tail chunk */
+        /* Create the tail */
         size_t newChunkSize = uiChunkUnits - uiUnits;
         Chunk_T oTailChunk = Chunk_getNextInMem(oChunk, oHeapStart, oHeapEnd);
         Chunk_setUnits(oTailChunk, newChunkSize);
@@ -222,7 +223,7 @@ static Chunk_T HeapMgr_useChunk(Chunk_T oChunk, size_t uiUnits)
 
         /* Insert the tail chunk into the proper bin */
         size_t newBin = Determine_bin(newChunkSize);
-        Insert_free(oTailChunk, newBin);
+        InsertToFreeList(oTailChunk, newBin);
 
         return oChunk;
     }
@@ -260,14 +261,11 @@ void *HeapMgr_malloc(size_t uiBytes)
     uiUnits++; /* Allow room for a header. */
     uiUnits++; /* Allow room for a footer */
 
-    /* Search the free lists starting from the bin corresponding to uiUnits */
     for (size_t i = uiUnits; i < BINS_SIZE; i++)
     {
         if (oBinSizeList[i] > 0 && oBinsList[i] != NULL)
         {
             Chunk_T oChunkInBin = oBinsList[i];
-            /* Since all chunks in this bin are of size i, which is >= uiUnits,
-               we can use the first chunk */
             oChunk = HeapMgr_useChunk(oChunkInBin, uiUnits);
             assert(HeapMgr_isValid());
             return (void *)((char *)oChunk + uiUnitSize);
@@ -310,15 +308,15 @@ void HeapMgr_free(void *pvBytes)
 
     /* Insert oChunk into proper bin */
     size_t bin = Determine_bin(Chunk_getUnits(oChunk));
-    Insert_free(oChunk, bin);
+    InsertToFreeList(oChunk, bin);
 
     /* Coalesce the given chunk and the previous one if appropriate. */
     Chunk_T oPrevChunk = Chunk_getPrevInMem(oChunk, oHeapStart, oHeapEnd);
     if (oPrevChunk != NULL && Chunk_getStatus(oPrevChunk) == CHUNK_FREE)
     {
         size_t prevBin = Determine_bin(Chunk_getUnits(oPrevChunk));
-        Remove_free(oPrevChunk, prevBin);
-        Remove_free(oChunk, bin);
+        RemoveFromFreeList(oPrevChunk, prevBin);
+        RemoveFromFreeList(oChunk, bin);
 
         size_t uiTotalUnits = Chunk_getUnits(oPrevChunk) + Chunk_getUnits(oChunk);
         Chunk_setUnits(oPrevChunk, uiTotalUnits);
@@ -326,7 +324,7 @@ void HeapMgr_free(void *pvBytes)
 
         oChunk = oPrevChunk;
         bin = Determine_bin(uiTotalUnits);
-        Insert_free(oChunk, bin);
+        InsertToFreeList(oChunk, bin);
     }
 
     /* Coalesce the given chunk and the next one if appropriate. */
@@ -334,15 +332,15 @@ void HeapMgr_free(void *pvBytes)
     if (oNextChunk != NULL && Chunk_getStatus(oNextChunk) == CHUNK_FREE)
     {
         size_t nextBin = Determine_bin(Chunk_getUnits(oNextChunk));
-        Remove_free(oNextChunk, nextBin);
-        Remove_free(oChunk, bin);
+        RemoveFromFreeList(oNextChunk, nextBin);
+        RemoveFromFreeList(oChunk, bin);
 
         size_t uiTotalUnits = Chunk_getUnits(oChunk) + Chunk_getUnits(oNextChunk);
         Chunk_setUnits(oChunk, uiTotalUnits);
         Chunk_setStatus(oChunk, CHUNK_FREE);
 
         bin = Determine_bin(uiTotalUnits);
-        Insert_free(oChunk, bin);
+        InsertToFreeList(oChunk, bin);
     }
 
     assert(HeapMgr_isValid());

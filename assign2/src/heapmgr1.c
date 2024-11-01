@@ -95,7 +95,7 @@ static int HeapMgr_isValid(void)
 #endif
 
 /*--------------------------------------------------------------------*/
-static void Insert_free(Chunk_T oChunk)
+static void InsertToFreeList(Chunk_T oChunk)
 {
     /*
     LIFO Insert
@@ -107,7 +107,7 @@ static void Insert_free(Chunk_T oChunk)
     oFreeList = oChunk;
 }
 
-static void Remove_free(Chunk_T oChunk)
+static void RemoveFromFreeList(Chunk_T oChunk)
 {
     Chunk_T oNext = Chunk_getNextInList(oChunk);
     Chunk_T oPrev = Chunk_getPrevInList(oChunk);
@@ -140,31 +140,30 @@ static Chunk_T HeapMgr_getMoreMemory(size_t uiUnits)
     if (oChunk == (Chunk_T)-1)
         return NULL;
 
-    /* Update oHeapEnd */
+    /* Determine where the program break is now, and note the
+       end of the heap. */
     oHeapEnd = (Chunk_T)sbrk(0);
 
     /* Set the fields of the new chunk. */
     Chunk_setUnits(oChunk, uiUnits);
     Chunk_setStatus(oChunk, CHUNK_FREE);
 
-    /* Add the new chunk to the front of the free list. */
-    Insert_free(oChunk);
+    InsertToFreeList(oChunk);
 
     /* Coalesce the new chunk and the previous one if appropriate. */
     Chunk_T oPrevChunk = Chunk_getPrevInMem(oChunk, oHeapStart, oHeapEnd);
     if (oPrevChunk != NULL && Chunk_getStatus(oPrevChunk) == CHUNK_FREE)
     {
-        Remove_free(oPrevChunk);
-        Remove_free(oChunk);
+        RemoveFromFreeList(oPrevChunk);
+        RemoveFromFreeList(oChunk);
 
-        /* Coalesce them */
+        /* Coalesce */
         size_t uiTotalUnits = Chunk_getUnits(oPrevChunk) + Chunk_getUnits(oChunk);
         Chunk_setUnits(oPrevChunk, uiTotalUnits);
         Chunk_setStatus(oPrevChunk, CHUNK_FREE);
 
-        /* Insert the coalesced chunk into the free list */
         oChunk = oPrevChunk;
-        Insert_free(oChunk);
+        InsertToFreeList(oChunk);
     }
 
     return oChunk;
@@ -182,29 +181,26 @@ static Chunk_T HeapMgr_useChunk(Chunk_T oChunk, size_t uiUnits)
     Chunk_T oNewChunk;
     size_t uiChunkUnits = Chunk_getUnits(oChunk);
 
-    /* Remove the chunk from the free list */
-    // Remove_free(oChunk);
-
+    /* If oChunk is close to the right size, then use it. */
     if (uiChunkUnits < uiUnits + MIN_UNITS_PER_CHUNK)
     {
-        /* Chunk is close in size, use it directly */
-        Remove_free(oChunk);
+        RemoveFromFreeList(oChunk);
         Chunk_setStatus(oChunk, CHUNK_INUSE);
         return oChunk;
     }
 
-    /* Split the chunk */
-    Remove_free(oChunk);
+    /* split */
+    RemoveFromFreeList(oChunk);
     Chunk_setUnits(oChunk, uiUnits);
     Chunk_setStatus(oChunk, CHUNK_INUSE);
 
-    /* Create the tail chunk */
+    /* create the tail */
     oNewChunk = Chunk_getNextInMem(oChunk, oHeapStart, oHeapEnd);
     Chunk_setUnits(oNewChunk, uiChunkUnits - uiUnits);
     Chunk_setStatus(oNewChunk, CHUNK_FREE);
-    Insert_free(oNewChunk);
 
-    /* Insert the tail chunk into the free list */
+    /* Insert the tail chunk into the proper spot */
+    InsertToFreeList(oNewChunk);
 
     return oChunk;
 }
@@ -242,9 +238,9 @@ void *HeapMgr_malloc(size_t uiBytes)
     uiUnits++; /* Allow room for a header. */
     uiUnits++; /* Allow room for a footer */
 
-    /* Search the free list for a chunk that is big enough */
     for (oChunk = oFreeList; oChunk != NULL; oChunk = Chunk_getNextInList(oChunk))
     {
+        /* If oChunk is big enough, then use it. */
         if (Chunk_getUnits(oChunk) >= uiUnits)
         {
             oChunk = HeapMgr_useChunk(oChunk, uiUnits);
@@ -262,7 +258,6 @@ void *HeapMgr_malloc(size_t uiBytes)
         return NULL;
     }
 
-    /* Now allocate from the new chunk */
     oChunk = HeapMgr_useChunk(oChunk, uiUnits);
     assert(HeapMgr_isValid());
     return (void *)((char *)oChunk + uiUnitSize);
@@ -289,36 +284,35 @@ void HeapMgr_free(void *pvBytes)
     assert(Chunk_isValid(oChunk, oHeapStart, oHeapEnd));
     Chunk_setStatus(oChunk, CHUNK_FREE);
 
-    /* Insert oChunk into free list */
-    Insert_free(oChunk);
+    InsertToFreeList(oChunk);
 
     /* Coalesce the given chunk and the previous one if appropriate. */
     Chunk_T oPrevChunk = Chunk_getPrevInMem(oChunk, oHeapStart, oHeapEnd);
     if (oPrevChunk != NULL && Chunk_getStatus(oPrevChunk) == CHUNK_FREE)
     {
-        Remove_free(oPrevChunk);
-        Remove_free(oChunk);
+        RemoveFromFreeList(oPrevChunk);
+        RemoveFromFreeList(oChunk);
 
         size_t uiTotalUnits = Chunk_getUnits(oPrevChunk) + Chunk_getUnits(oChunk);
         Chunk_setUnits(oPrevChunk, uiTotalUnits);
         Chunk_setStatus(oPrevChunk, CHUNK_FREE);
 
         oChunk = oPrevChunk;
-        Insert_free(oChunk);
+        InsertToFreeList(oChunk);
     }
 
     /* Coalesce the given chunk and the next one if appropriate. */
     Chunk_T oNextChunk = Chunk_getNextInMem(oChunk, oHeapStart, oHeapEnd);
     if (oNextChunk != NULL && Chunk_getStatus(oNextChunk) == CHUNK_FREE)
     {
-        Remove_free(oNextChunk);
-        Remove_free(oChunk);
+        RemoveFromFreeList(oNextChunk);
+        RemoveFromFreeList(oChunk);
 
         size_t uiTotalUnits = Chunk_getUnits(oChunk) + Chunk_getUnits(oNextChunk);
         Chunk_setUnits(oChunk, uiTotalUnits);
         Chunk_setStatus(oChunk, CHUNK_FREE);
 
-        Insert_free(oChunk);
+        InsertToFreeList(oChunk);
     }
 
     assert(HeapMgr_isValid());
