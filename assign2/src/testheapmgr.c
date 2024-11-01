@@ -291,7 +291,6 @@ static void testLifoFixed(int iCount, int iSize)
       LIFO order. */
    for (i = iCount - 1; i >= 0; i--)
    {
-      // printf("%d\n", i);
 #ifndef NDEBUG
       {
          /* Check the chunk that is about to be freed to make sure
@@ -304,6 +303,7 @@ static void testLifoFixed(int iCount, int iSize)
 #endif
 
       HeapMgr_free(apcChunks[i]);
+      // printf("%d\n", i);
    }
 }
 
