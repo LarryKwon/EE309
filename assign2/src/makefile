@@ -1,4 +1,4 @@
-CC = gcc
+CC = gcc209
 CFLAGS = -O3 -D NDEBUG -D_GNU_SOURCE
 
 all: testheapmgrgnu testheapmgrkr testheapmgrbase testheapmgr1 testheapmgr2
