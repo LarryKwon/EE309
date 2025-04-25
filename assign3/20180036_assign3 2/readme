@@ -1,0 +1,78 @@
+- Your name and student ID.
+
+- A description how you solved challenges
+01-basic
+가장 간단한 방법으로, stack overflow를 이용해 secret 변수를 덮어쓰면 됩니다.
+little endian을 고려하여 적절한 payload를 전송합니다.
+
+02-jump
+return address를 적절하게 덮어씀으로써 main함수가 종료된 뒤, shell spawn을 하도록 합니다.
+win 함수가 shell spawn을 하고 있으므로, win 함수의 주소를 덮어 씁니다.
+이를 위해 stack과 rbp를 고려하여 payload를 전송합니다.
+
+03-shellcode
+env가 로드되는 메모리 주소를 알고 있으므로 NOP-sleding을 통해 exploit 합니다.
+특히 env에 spawn shell code를 넣을 때 NOP을 넣은 assembly code를 삽입한후, return address를 해당 NOP이 존재하는 범위 사이로 설정하면 shell spawn이 가능합니다.
+
+04-system
+target이 스택의 주소를 print하기 때문에 해당 stack 구조를 통해, saved rip가 어디를 가리키고 있는지 파악할 수 있습니다.
+조사 결과 libc_start_call_main의 128번째 위치를 가리키고 있었고 여기서 libc_start_call_main_offset를 빼서 libc_base를 찾을 수 있습니다.
+이를 통해 saved rip 주소를 적절히 덮어써서 system을 호출하면 됩니다. 이 때 함수 인자를 전달해주기 위해서 pop_rax_pop_rdi_call_rax 가젯을 사용하였습니다.
+
+05-leak
+rop-chain을 구성하여 system을 호출합니다.
+libc_start_main 값을 유출함으로써 libc_base 주소를 찾을 수 있고 이를 이용해 system을 호출할 수 있습니다.
+따라서 1차적으로는 libc_start_main을 leak하는 puts 함수를 사용하였고, 함수 인자로 전달하기 위해 적절한 gadget을 사용하였습니다. 유출 후에는 main을 한 번 더 실행하게 함으로써, 2차 rop를 하고자 했습니다.
+2차적으로는 4번과 비슷하게 알아낸 system 주소를 이용하여 saved rip를 적절히 덮어써서 spawn을 하게 합니다. 다만 이 과정에서 byte allign이 안 맞는 문제가 있어 ret gadget을 한 번 끼워넣는 식으로 해결하였습니다.
+디버깅을 위해 p.pause()를 사용하였습니다.
+
+06-chain
+write,read,open 외에는 쓸 수가 없기에 system을 호출하지 못하고, 바로 flag를 읽고 출력해야합니다.
+이를 위해서 4번의 rop를 시도하였습니다. 첫 번째는 5번과 같이 libc_base를 leak하기 위함이고 2번째는 open 3번째는 read, 4번째는 write 입니다.
+open 시에는, flag.txt의 symbolic link를 'a'라는 이름으로 만들어, 해당 파일 이름을 현재 target의 binary에서 쉽게 찾을 수 있도록 했습니다. 원래는 "flag.txt"를 bss에 저장한 후, 읽는 방식을 하려고 했으나 잘 되지 않았습니다.
+read 시에는, .bss 주소에 flag 값을 읽는 식으로 했고
+write 시에는 stdout 으로 .bss의 값을 출력하였습니다.
+open,read,write를 위해서 최대 함수 인자 3개가 필요했기에, 적절한 gadget을 사용해야 했고 
+"pop rdi; ret"
+"pop rsi; pop r15; ret"
+"pop rdx; pop r12; ret"
+을 사용하였습니다.
+
+07-full
+6번과 비슷한 방식으로 해결했습니다. PIE가 적용되어있으나 libc_base를 leak하는 방법은 6번과 마찬가지였고, 신경써야할 것은 canary를 유출하는 것이었습니다.
+canary leak을 조심스럽게 한 후, 최종적으로 canary가 손상되지 않게끔 payload를 쌓아서 전송하면 됩니다.
+
+
+- Answers for 3 questions in challenges
+1) Why `setregid` is required for solving this challenge? (02-jump)
+In Linux, an executable file can have a set-group-ID (setgid) bit, allowing it to run with the privileges of the group owner, even if executed by another user. To effectively perform certain operations (such as accessing restricted files or memory), the program must switch its real and effective group IDs using setregid.
+
+For this challenge, the objective is reading flag which previlege is 02-jump.
+even we spawn the shell, if there is no proper previlege on opening flags, we can not achieve the objective.
+Therefore, the `setregid` is essential for solving this challenge.
+
+2) As you can see, if the binary is PIE enabled, it also enables RELRO by default. Why do developers make this choice? (03-shellcode)
+PIE is a memory randomization technique on runtime and RELRO is making GOT as readonly, so preventing unauthorized writing the GOT.
+However both have each drawbacks. in detail, with only PIE, we can overwrite the GOT, then it makes the PIE no more useful. But with RERLO, we can make this scenario occured.
+Conversely, with only RELRO, we can make GOT as readonly, but if it is stil predictable, we can use the address in GOT for exploiting. But with PIE, we can randomize the memory address of GOT, so we can prevent this scenario.
+Additionally, the RELRO has slight overhead for executing. 
+So in the aspect of Tradeoff, there are much more gain than overhead when enabling both together.
+
+3) Lets assume that we prevent from calling `read` using `seccomp` (using blacklist). Can you still read a flag? How? (06-chain)
+Yes, we can.
+
+Before that, I want to mention there's a possible case with some conditions to exploit without using read.
+
+There is an example not allowing read, which is "writeonly" challenge from Google CTF 2020.
+In this challenge, there was a process that only allowed the use of open and write, and this process had a child process. 
+But the point is that, it call the seccomp after fork the child. Therefore, the child process did not inherit the parent's seccomp rules. 
+Additionally, the program itself print the process id of child, so we can open the /proc/${child_pid}/mem file and overwrite shellcode of it and subsequently read the flag.
+
+However in the case of 06-chain, I think there's still a way to exploit with some condition.
+I found the sendfile syscall in linux man page.
+in linux man page(https://man7.org/linux/man-pages/man2/sendfile.2.html), it introduce the sendfile as it transfer data between file descriptors.
+Therefore, if the sendfile syscall is allowed, we can directly copy the data in file to stdout which file descriptor is 1.
+if not, with only using open, openat and write, it is impossible to exploit.
+
+
+- (Optional) Any suggestion to improve this assignment
